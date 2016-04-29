@@ -8,56 +8,56 @@ import _ from 'underscore';
 import {Router, History} from 'react-router';
 import classNames from 'classnames'
 
-const PAGES = [
-  [
-    {
-      displayName: 'Where to Get a Drink in NYC',
-      displayText: "Check out a map of all of the Big Apple's drinking establishments",
-      name: 'liquorLicenses',
-      anchor: '#liquor_licenses',
-      component: require('./LiquorMap')
-    },
-    {
-      displayName: 'Interactive Language Map of Chicago',
-      displayText: 'Explore the popularity of foreign languages in Chicago on a neighborhood basis.',
-      name: 'chicagoLanguages',
-      anchor: '#languages',
-      component: require('./ChicagoLanguages')
-    },
-  ],
-  [
-    {
-      displayName: 'Heat Map of UB moves',
-      displayText: 'Popular Moves.',
-      name: 'heatMap',
-      anchor: '#heat_map',
-      component: require('./UBHeatMap')
-    },
-    {
-      displayName: 'Slack Chat Room experience',
-      displayText: 'A visualization of UB Slack users and their chat room activity.',
-      name: 'sankey',
-      anchor: '#sankey',
-      component: require('./Sankey')
-    }
-  ],
-];
+class OnePager extends React.Component {
 
-var OnePager = React.createClass({
+  get PAGES() {
+    return [
+      [
+        {
+          displayName: 'Where to Get a Drink in NYC',
+          displayText: "Check out a map of all of the Big Apple's drinking establishments",
+          name: 'liquorLicenses',
+          anchor: '#liquor_licenses',
+          component: require('./LiquorMap')
+        },
+        {
+          displayName: 'Interactive Language Map of Chicago',
+          displayText: 'Explore the popularity of foreign languages in Chicago on a neighborhood basis.',
+          name: 'chicagoLanguages',
+          anchor: '#languages',
+          component: require('./ChicagoLanguages')
+        },
+      ],
+      [
+        {
+          displayName: 'Heat Map of UB moves',
+          displayText: 'Popular Moves.',
+          name: 'heatMap',
+          anchor: '#heat_map',
+          component: require('./UBHeatMap')
+        },
+        {
+          displayName: 'Slack Chat Room experience',
+          displayText: 'A visualization of UB Slack users and their chat room activity.',
+          name: 'sankey',
+          anchor: '#sankey',
+          component: require('./Sankey')
+        }
+      ],
+    ]
+  }
 
-  contextTypes: {
-    router: React.PropTypes.object.isRequired
-  },
-
-  getInitialState(){
-    return {row: 0, col: 0, direction: 'down'};
-  },
+  constructor(props, context) {
+    super(props);
+    this.state = {row: 0, col: 0, direction: 'down'};
+    context.router
+  }
 
   transitionViz(args){
     if(!this.moving){
       this.moving = true;
-      var col = args.column;
-      var row = args.row;
+      let col = args.column;
+      let row = args.row;
 
       switch(args.direction){
         case 'right':
@@ -77,41 +77,38 @@ var OnePager = React.createClass({
         this.moving = false;
       }, 2000);
       if(row < 0) return;
-      if(PAGES.length < row + 1) return;
-      if(PAGES[row].length < col + 1) return;
+      if(this.PAGES.length < row + 1) return;
+      if(this.PAGES[row].length < col + 1) return;
       if(col < 0) return;
 
-      var nextComp = PAGES[row][col];
-      this.setState({direction: args.direction}, ()=>{
-        this.context.router.push(nextComp.name)
-        // this.props.history.transitionTo('activity-feed',   {slug: nextComp.name });
-      });
+      const nextComp = this.PAGES[row][col];
+      this.setState({direction: args.direction}, ()=> this.context.router.push(nextComp.name));
     }
-  },
+  }
 
   renderComp(args){
     const colIndex = args.colIndex || 0;
     const rowIndex = args.rowIndex || 0;
-    var obj = PAGES[args.row][args.col];
-    var Page = obj.component;
+    const obj = this.PAGES[args.row][args.col];
+    const Page = obj.component;
     return (
       <section key={obj.name} style={{height: '100%', width: '100%', display: 'inline-block'}}>
         <a id={obj.name} />
         <Page ref={obj.name} />
       </section>
     );
-  },
+  }
 
   renderArrows(args){
     const colIndex = args.colIndex || 0;
     const rowIndex = args.rowIndex || 0;
-    var arrows = [];
+    let arrows = [];
     if(colIndex > 0) arrows.push({direction: 'left', name: 'chevron-left'});
-    if(colIndex + 1 < PAGES[rowIndex].length) arrows.push({direction: 'right', name: 'chevron-right'});
+    if(colIndex + 1 < this.PAGES[rowIndex].length) arrows.push({direction: 'right', name: 'chevron-right'});
     if(rowIndex > 0) arrows.push({direction: 'up', name: 'chevron-up'});
-    if(rowIndex + 1 < PAGES.length) arrows.push({direction: 'down', name: 'chevron-down'});
-    var arrowIcons = _.map(arrows, (arrow, i)=>{
-      var options = {
+    if(rowIndex + 1 < this.PAGES.length) arrows.push({direction: 'down', name: 'chevron-down'});
+    const arrowIcons = _.map(arrows, (arrow, i)=>{
+      let options = {
         direction: arrow.direction,
         column: colIndex,
         row: rowIndex
@@ -122,23 +119,23 @@ var OnePager = React.createClass({
       switch(arrow.direction){
         case 'up':
           placement = 'bottom';
-          title = PAGES[rowIndex-1][colIndex].displayName;
-          description = PAGES[rowIndex-1][colIndex].displayText;
+          title = this.PAGES[rowIndex-1][colIndex].displayName;
+          description = this.PAGES[rowIndex-1][colIndex].displayText;
           break;
         case 'down':
           placement = 'top';
-          title = PAGES[rowIndex+1][colIndex].displayName;
-          description = PAGES[rowIndex+1][colIndex].displayText;
+          title = this.PAGES[rowIndex+1][colIndex].displayName;
+          description = this.PAGES[rowIndex+1][colIndex].displayText;
           break;
         case 'left':
           placement = 'right';
-          title = PAGES[rowIndex][colIndex-1].displayName;
-          description = PAGES[rowIndex][colIndex-1].displayText;
+          title = this.PAGES[rowIndex][colIndex-1].displayName;
+          description = this.PAGES[rowIndex][colIndex-1].displayText;
           break;
         case 'right':
           placement = 'left';
-          title = PAGES[rowIndex][colIndex+1].displayName;
-          description = PAGES[rowIndex][colIndex+1].displayText;
+          title = this.PAGES[rowIndex][colIndex+1].displayName;
+          description = this.PAGES[rowIndex][colIndex+1].displayText;
           break;
       }
       let popover = <Popover id='Popover' title={title}>{description}</Popover>
@@ -149,28 +146,28 @@ var OnePager = React.createClass({
       );
     });
     return arrowIcons;
-  },
+  }
 
   render(){
-    var sectionHeight = window.innerHeight;
-    var sectionWidth = window.innerWidth;
-    var pageScoller = {
+    const sectionHeight = window.innerHeight;
+    const sectionWidth = window.innerWidth;
+    let pageScoller = {
       perspective: sectionHeight +'px',
       MozPerspective: sectionHeight +'px',
       WebkitPerspective: sectionHeight +'px'
     };
-    var direction = 'scroll-' + this.state.direction;
-    var pageScollerHash = { 'pages-scroller': true };
+    const direction = 'scroll-' + this.state.direction;
+    const pageScollerHash = { 'pages-scroller': true };
     pageScollerHash[direction] = true;
-    var pageScollerClass = classNames(pageScollerHash);
-    var slug = this.props.params.slug || PAGES[0].name;
-    var ref = this.refs[slug];
-    var colIndex = 0;
-    var rowIndex = 0;
+    const pageScollerClass = classNames(pageScollerHash);
+    const slug = this.props.params.slug || this.PAGES[0].name;
+    const ref = this.refs[slug];
+    let colIndex = 0;
+    let rowIndex = 0;
 
-    _.each(PAGES, (row, rowI, array) => {
+    this.PAGES.forEach((row, rowI, array) => {
 
-      _.each(row, (element, colI) => {
+      row.forEach((element, colI) => {
         if(element.name === slug){
           colIndex = colI;
           rowIndex = rowI;
@@ -178,11 +175,11 @@ var OnePager = React.createClass({
       });
 
     });
-    var arrowIcons = this.renderArrows({colIndex: colIndex, rowIndex: rowIndex});
-    var page = this.renderComp({col: colIndex, row: rowIndex});
+    const arrowIcons = this.renderArrows({colIndex: colIndex, rowIndex: rowIndex});
+    const page = this.renderComp({col: colIndex, row: rowIndex});
 
     return(
-      <div className='pages-container' style={{height: '100%', width: '100%', position: "fixed"}} onWheel={this.handleScroll} onTouchStart={this.onTouchStart} onTouchEnd={this.onTouchEnd}>
+      <div className='pages-container' style={{height: '100%', width: '100%', position: "fixed"}} >
        <div className={pageScollerClass} style={pageScoller}>
          <div className='arrow-container' style={{width: '100%', height: '100%', position: 'absolute'}}>
            {arrowIcons}
@@ -194,6 +191,10 @@ var OnePager = React.createClass({
      </div>
     )
   }
-});
+}
 
-module.exports = OnePager;
+OnePager.contextTypes = {
+    router: React.PropTypes.object.isRequired
+}
+
+export default OnePager;
