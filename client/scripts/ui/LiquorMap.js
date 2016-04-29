@@ -7,16 +7,40 @@ import SVGContainer from './SvgContainer';
 
 class LiquorMap extends React.Component {
   drawMe(){
+  }
+
+  renderStores() {
     const height = $('section').height(),
     width = $('section').width();
     const color = d3.scale.category20();
     const svg = d3.select('.default-svg-container.liquor-map svg');
     const scaleRatio = width < height ? 50 : 92.43;
     const scale = height * scaleRatio;
-    const textG = svg.append('g');
-    const textName = textG.append('text');
-    const textDate = textG.append('text');
-    textG.attr('class', 'text-group')
+    const projection = d3.geo.mercator()
+                .center([-73.94, 40.70])
+                .scale(scale)
+                .translate([(width) / 2, (height)/2]);
+
+    const path = d3.geo.path().pointRadius(1)
+        .projection(projection);
+
+    const stores =  this.props.dataPoints.stores.map((store, i) =>{
+      let style = {
+        fill: 'red'
+        // 'fill': store.color = color(store.properties.name.replace(/ .*/, ''))
+      }
+      return(
+        <path id={store.properties.name} key={i} className='new-york-store' style={style} d={path(store)}/>
+      )
+    });
+    return stores
+  }
+
+  renderTextSpace() {
+    const height = window.innerHeight;
+    const width = window.innerWidth;
+    const scaleRatio = width < height ? 50 : 92.43;
+    const scale = height * scaleRatio;
     let textY;
     let textX;
     let fontSize;
@@ -33,54 +57,49 @@ class LiquorMap extends React.Component {
       fontSize = '30px';
     }
     if(width < 768) fontSize = '14px';
-    textName.text('Places to Get a Drink')
-        .attr('fill', 'white')
-        .attr('text-anchor', textAnchor)
-        .attr('font-size', fontSize)
-        .attr('x',textX)
-        .attr('y', textY);
-    textDate.text('New York NY, May 2015')
-        .attr('text-anchor', textAnchor)
-        .attr('fill', 'white')
-        .attr('font-size', fontSize)
-        .attr('x',textX)
-        .attr('y', textY + 50);
 
-    d3.xhr('/maps/new_york.json', (error, success) => {
-      const projection = d3.geo.mercator()
-                  .center([-73.94, 40.70])
-                  .scale(scale)
-                  .translate([(width) / 2, (height)/2]);
+    const textNameAttrs = {
+      fill: 'white',
+      textAnchor: textAnchor,
+      fontSize: fontSize,
+      x: textX,
+      y: textY
+    }
 
-      const path = d3.geo.path().pointRadius(1)
-          .projection(projection);
+    const textDateAtts = {
+        textAnchor: textAnchor,
+        fill: 'white',
+        fontSize: fontSize,
+        x: textX,
+        y: textY + 50
+    }
 
-      const g = svg.append('g');
-
-      const newYork = JSON.parse(success.response);
-      g.append('g')
-        .attr('id', 'boroughs')
-        .selectAll('.state')
-        .data(newYork.features)
-        .enter().append('path')
-        .attr('class', function(d){ return d.properties.name; })
-        .attr('class', 'new-york-unit')
-        .attr('d', path);
-      g.append('g')
-        .attr('id', 'stores')
-        .selectAll('.stores')
-        .data(newYork.stores)
-        .enter().append('path')
-        .attr('id', function(d){ return d.properties.name; })
-        .attr('class', 'new-york-store')
-        .style('fill', (d) => { return d.color = color(d.properties.name.replace(/ .*/, ''))})
-        .attr('d', path);
-    });
+    return(
+      <g className='text-group'>
+        <text {...textNameAttrs}>Places to Get a Drink</text>
+        <text {...textDateAtts}>New York NY, May 2015</text>
+      </g>
+    )
   }
 
   render() {
+    const height = window.innerHeight;
+    const width = window.innerWidth;
+    const viewBox = '0 0 ' + width + ' ' + height;
+
+    let stores = <path />;
+    if(this.props.dataPoints['type']) {
+      stores = this.renderStores(this.props.dataPoints.stores)
+    }
     return (
-      <SVGContainer className='liquor-map' onMount={this.drawMe}/>
+      <SVGContainer className='liquor-map' onMount={this.drawMe}>
+        <svg viewBox={viewBox} height='100%' width='100%'>
+          { this.renderTextSpace() }
+          <g id='stores'>
+            {stores}
+          </g>
+        </svg>
+      </SVGContainer>
     );
   }
 }

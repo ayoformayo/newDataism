@@ -1,5 +1,7 @@
 'use strict';
-import React from 'react';
+import React, { Component, PropTypes } from 'react'
+import { connect } from 'react-redux'
+import { selectEndPoint, fetchVizDataIfNeeded, invalidateEndPoint } from '../actions'
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { Glyphicon } from 'react-bootstrap';
 import { Popover } from 'react-bootstrap';
@@ -10,6 +12,7 @@ import classNames from 'classnames'
 
 class OnePager extends React.Component {
 
+
   get PAGES() {
     return [
       [
@@ -18,14 +21,16 @@ class OnePager extends React.Component {
           displayText: "Check out a map of all of the Big Apple's drinking establishments",
           name: 'liquorLicenses',
           anchor: '#liquor_licenses',
-          component: require('./LiquorMap')
+          endPoint: 'maps/new_york',
+          component: require('../ui/LiquorMap')
         },
         {
           displayName: 'Interactive Language Map of Chicago',
           displayText: 'Explore the popularity of foreign languages in Chicago on a neighborhood basis.',
           name: 'chicagoLanguages',
           anchor: '#languages',
-          component: require('./ChicagoLanguages')
+          endPoint: 'maps/chicago_communities',
+          component: require('../ui/ChicagoLanguages')
         },
       ],
       [
@@ -34,26 +39,57 @@ class OnePager extends React.Component {
           displayText: 'Popular Moves.',
           name: 'heatMap',
           anchor: '#heat_map',
-          component: require('./UBHeatMap')
+          endPoint: 'maps/ub_heat_map',
+          component: require('../ui/UBHeatMap')
         },
         {
           displayName: 'Slack Chat Room experience',
           displayText: 'A visualization of UB Slack users and their chat room activity.',
           name: 'sankey',
           anchor: '#sankey',
-          component: require('./Sankey')
+          endPoint: 'slack',
+          component: require('../ui/Sankey')
         }
       ],
     ]
   }
 
   constructor(props, context) {
-    super(props);
+    super(props)
     this.state = {row: 0, col: 0, direction: 'down'};
+    this.handleChange = this.handleChange.bind(this)
+    this.handleRefreshClick = this.handleRefreshClick.bind(this)
     context.router
   }
 
+  componentDidMount() {
+    const { dispatch } = this.props
+    const {colIndex, rowIndex} = this.findCurrentComp();
+    const thisComp = this.PAGES[rowIndex][colIndex]
+    dispatch(fetchVizDataIfNeeded(thisComp.endPoint));
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { dispatch, selectedEndpoint } = nextProps
+    if (nextProps.selectedEndpoint !== this.props.selectedEndpoint) {
+      const { dispatch, selectedEndpoint } = nextProps
+      dispatch(fetchVizDataIfNeeded(selectedEndpoint))
+    }
+  }
+
+  handleChange(nextEndPoint) {
+    this.props.dispatch(selectEndPoint(nextEndPoint))
+  }
+
+  handleRefreshClick(e) {
+    e.preventDefault()
+    const { dispatch, selectedEndpoint } = this.props
+    dispatch(invalidateEndPoint(selectedEndpoint))
+    dispatch(fetchVizDataIfNeeded(selectedEndpoint))
+  }
+
   transitionViz(args){
+    const { dispatch } = this.props
     if(!this.moving){
       this.moving = true;
       let col = args.column;
@@ -82,7 +118,10 @@ class OnePager extends React.Component {
       if(col < 0) return;
 
       const nextComp = this.PAGES[row][col];
-      this.setState({direction: args.direction}, ()=> this.context.router.push(nextComp.name));
+      this.setState({direction: args.direction}, ()=> {
+        this.context.router.push(nextComp.name);
+        dispatch(fetchVizDataIfNeeded(nextComp.endPoint));
+      });
     }
   }
 
@@ -94,7 +133,7 @@ class OnePager extends React.Component {
     return (
       <section key={obj.name} style={{height: '100%', width: '100%', display: 'inline-block'}}>
         <a id={obj.name} />
-        <Page ref={obj.name} />
+        <Page ref={obj.name} dataPoints={this.props.dataPoints}/>
       </section>
     );
   }
@@ -148,6 +187,22 @@ class OnePager extends React.Component {
     return arrowIcons;
   }
 
+  findCurrentComp() {
+    const slug = this.props.params.slug || this.PAGES[0].name;
+    let colIndex = 0;
+    let rowIndex = 0;
+
+    this.PAGES.forEach((row, rowI, array) => {
+      row.forEach((element, colI) => {
+        if(element.name === slug){
+          colIndex = colI;
+          rowIndex = rowI;
+        };
+      });
+    });
+    return { colIndex: colIndex, rowIndex: rowIndex };
+  }
+
   render(){
     const sectionHeight = window.innerHeight;
     const sectionWidth = window.innerWidth;
@@ -160,21 +215,7 @@ class OnePager extends React.Component {
     const pageScollerHash = { 'pages-scroller': true };
     pageScollerHash[direction] = true;
     const pageScollerClass = classNames(pageScollerHash);
-    const slug = this.props.params.slug || this.PAGES[0].name;
-    const ref = this.refs[slug];
-    let colIndex = 0;
-    let rowIndex = 0;
-
-    this.PAGES.forEach((row, rowI, array) => {
-
-      row.forEach((element, colI) => {
-        if(element.name === slug){
-          colIndex = colI;
-          rowIndex = rowI;
-        };
-      });
-
-    });
+    const {colIndex, rowIndex} = this.findCurrentComp();
     const arrowIcons = this.renderArrows({colIndex: colIndex, rowIndex: rowIndex});
     const page = this.renderComp({col: colIndex, row: rowIndex});
 
@@ -194,7 +235,31 @@ class OnePager extends React.Component {
 }
 
 OnePager.contextTypes = {
-    router: React.PropTypes.object.isRequired
+    router: React.PropTypes.object.isRequired,
+    selectedEndpoint: PropTypes.string.isRequired,
+    dataPoints: PropTypes.array.isRequired,
+    isFetching: PropTypes.bool.isRequired,
+    lastUpdated: PropTypes.number,
+    dispatch: PropTypes.func.isRequired
 }
 
-export default OnePager;
+function mapStateToProps(state) {
+  const { selectedEndpoint, dataPointsByEndPoint } = state
+  const {
+    isFetching,
+    lastUpdated,
+    items: dataPoints
+  } = dataPointsByEndPoint[selectedEndpoint] || {
+    isFetching: true,
+    items: []
+  }
+
+  return {
+    selectedEndpoint,
+    dataPoints,
+    isFetching,
+    lastUpdated
+  }
+}
+
+export default connect(mapStateToProps)(OnePager)
