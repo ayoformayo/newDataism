@@ -33,12 +33,13 @@ function dataPoints(state = {
         didInvalidate: false
       })
     case RECEIVE_VIZ_DATA:
-      return Object.assign({}, state, {
+      let newState = {
         isFetching: false,
         didInvalidate: false,
-        items: action.dataPoints,
-        lastUpdated: action.receivedAt
-      })
+        lastUpdated: action.receivedAt,
+        items: action.dataPoints
+      }
+      return Object.assign({}, state, newState)
     default:
       return state
   }

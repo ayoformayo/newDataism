@@ -130,10 +130,12 @@ class OnePager extends React.Component {
     const rowIndex = args.rowIndex || 0;
     const obj = this.PAGES[args.row][args.col];
     const Page = obj.component;
+    const endPoint = obj.endPoint;
+    if(this.props.isFetching) return <section key={obj.name} style={{height: '100%', width: '100%', display: 'inline-block'}}/>
     return (
       <section key={obj.name} style={{height: '100%', width: '100%', display: 'inline-block'}}>
         <a id={obj.name} />
-        <Page ref={obj.name} dataPoints={this.props.dataPoints}/>
+        <Page ref={obj.name} dataPoints={this.props.dataPoints[endPoint].items}/>
       </section>
     );
   }
@@ -248,12 +250,11 @@ function mapStateToProps(state) {
   const {
     isFetching,
     lastUpdated,
-    items: dataPoints
   } = dataPointsByEndPoint[selectedEndpoint] || {
     isFetching: true,
-    items: []
+    items: {}
   }
-
+  const dataPoints = dataPointsByEndPoint;
   return {
     selectedEndpoint,
     dataPoints,

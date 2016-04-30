@@ -23,8 +23,7 @@ class LiquorMap extends React.Component {
 
     const path = d3.geo.path().pointRadius(1)
         .projection(projection);
-
-    const stores =  this.props.dataPoints.stores.map((store, i) =>{
+    const stores = this.props.dataPoints.stores.map((store, i) =>{
       let style = {
         fill: 'red'
         // 'fill': store.color = color(store.properties.name.replace(/ .*/, ''))
@@ -83,7 +82,7 @@ class LiquorMap extends React.Component {
   }
 
   render() {
-    let stores = this.props.dataPoints['type'] ? this.renderStores(this.props.dataPoints.stores) : <path />;
+    let stores = this.props.dataPoints ? this.renderStores(this.props.dataPoints.stores) : <path />;
 
     return (
       <SVGContainer className='liquor-map' onMount={this.drawMe}>
