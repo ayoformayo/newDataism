@@ -172,11 +172,13 @@ class ChicagoLanguages extends React.Component {
   render() {
     var activelanguage = this.state.activelanguage || 'african_languages';
     return (
-      <SVGContainer className='language-map' onMount={this.drawMe.bind(this)}>
+      <div>
         <DropdownButton id='language-picker' title={activelanguage}>
-          {this.renderButtons()}
+        // {this.renderButtons()}
         </DropdownButton>
-      </SVGContainer>
+        <SVGContainer className='language-map' onMount={this.drawMe.bind(this)}>
+        </SVGContainer>
+      </div>
     );
   }
 }
