@@ -22,9 +22,15 @@ class SvgContainer extends React.Component {
     classHash[this.props.className]  = true;
     let containerClass = classNames(classHash);
 
+    const height = window.innerHeight;
+    const width = window.innerWidth;
+    const viewBox = '0 0 ' + width + ' ' + height;
+
     return (
       <div className={containerClass} >
-        {this.props.children}
+        <svg viewBox={viewBox} height='100%' width='100%'>
+          {this.props.children}
+        </svg>
       </div>
     );
   }

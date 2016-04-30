@@ -83,22 +83,14 @@ class LiquorMap extends React.Component {
   }
 
   render() {
-    const height = window.innerHeight;
-    const width = window.innerWidth;
-    const viewBox = '0 0 ' + width + ' ' + height;
+    let stores = this.props.dataPoints['type'] ? this.renderStores(this.props.dataPoints.stores) : <path />;
 
-    let stores = <path />;
-    if(this.props.dataPoints['type']) {
-      stores = this.renderStores(this.props.dataPoints.stores)
-    }
     return (
       <SVGContainer className='liquor-map' onMount={this.drawMe}>
-        <svg viewBox={viewBox} height='100%' width='100%'>
-          { this.renderTextSpace() }
-          <g id='stores'>
-            {stores}
-          </g>
-        </svg>
+        { this.renderTextSpace() }
+        <g id='stores'>
+          {stores}
+        </g>
       </SVGContainer>
     );
   }
