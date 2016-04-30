@@ -174,7 +174,7 @@ class ChicagoLanguages extends React.Component {
     return (
       <div>
         <DropdownButton id='language-picker' title={activelanguage}>
-        // {this.renderButtons()}
+        {this.renderButtons()}
         </DropdownButton>
         <SVGContainer className='language-map' onMount={this.drawMe.bind(this)}>
         </SVGContainer>
