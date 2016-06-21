@@ -140,6 +140,7 @@ class OnePager extends React.Component {
   }
 
   renderArrows(args){
+    if(this.props.location.query['show_arrows'] !== 'true') return null;
     const colIndex = args.colIndex || 0;
     const rowIndex = args.rowIndex || 0;
     let arrows = [];
