@@ -51,6 +51,9 @@
     "node": ">=0.10.0"
   },
   "scripts": {
+    "postinstall": "gulp"
+  },
+  "scripts": {
     "test": "jest"
   },
   "jest": {
