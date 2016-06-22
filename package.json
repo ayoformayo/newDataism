@@ -51,10 +51,9 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "postinstall": "gulp"
-  },
-  "scripts": {
-    "test": "jest"
+    "postinstall": "gulp",
+    "test": "jest",
+    "start": "gulp heroku:production"
   },
   "jest": {
     "scriptPreprocessor": "<rootDir>/preprocessor.js",
