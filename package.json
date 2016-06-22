@@ -18,6 +18,7 @@
     "gulp-useref": "~0.4.4",
     "gulp-util": "~3.0.1",
     "gulp-webserver": "latest",
+    "gulp": "^3.9.1",
     "install": "^0.6.1",
     "isomorphic-fetch": "^2.2.1",
     "npm": "^3.8.7",
@@ -52,7 +53,7 @@
   },
   "scripts": {
     "postinstall": "gulp",
-    "test": "jest",
+    "test": "jest"
   },
   "jest": {
     "scriptPreprocessor": "<rootDir>/preprocessor.js",
