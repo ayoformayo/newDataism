@@ -6,13 +6,11 @@ import topojson from 'topojson';
 import SVGContainer from './SvgContainer';
 
 class LiquorMap extends React.Component {
-  drawMe(){
-  }
-
   renderStores() {
+    const stores = this.props.dataPoints.stores;
     const height = $('section').height(),
     width = $('section').width();
-    const color = d3.scale.category20();
+    const colorScale = d3.scale.category20();
     const svg = d3.select('.default-svg-container.liquor-map svg');
     const scaleRatio = width < height ? 50 : 92.43;
     const scale = height * scaleRatio;
@@ -21,18 +19,20 @@ class LiquorMap extends React.Component {
                 .scale(scale)
                 .translate([(width) / 2, (height)/2]);
 
-    const path = d3.geo.path().pointRadius(1)
+    const path = d3.geo.path().pointRadius(0.4)
         .projection(projection);
-    const stores = this.props.dataPoints.stores_2016.map((store, i) =>{
+    const minAge = stores[0]['properties']['issued_to_i'];
+    const maxAge = stores[stores.length - 1]['properties']['issued_to_i'];
+    const ramp = d3.scale.linear().domain([minAge,maxAge]).range(["blue","red"]);
+    const mappedStores = stores.map((store, i) =>{
       let style = {
-        fill: 'red'
-        // 'fill': store.color = color(store.properties.name.replace(/ .*/, ''))
+        fill: colorScale(store.properties.name.replace(/ .*/, ''))
       }
       return(
         <path id={store.properties.name} key={i} className='new-york-store' style={style} d={path(store)}/>
       )
     });
-    return stores
+    return mappedStores;
   }
 
   renderTextSpace() {
@@ -76,13 +76,13 @@ class LiquorMap extends React.Component {
     return(
       <g className='text-group'>
         <text {...textNameAttrs}>Places to Get a Drink</text>
-        <text {...textDateAtts}>New York NY, May 2015</text>
+        <text {...textDateAtts}>New York NY, June 2016</text>
       </g>
     )
   }
 
   render() {
-    let stores = this.props.dataPoints ? this.renderStores(this.props.dataPoints.stores_2016) : <path />;
+    let stores = this.props.dataPoints ? this.renderStores() : <path />;
 
     return (
       <SVGContainer className='liquor-map' onMount={this.drawMe}>
