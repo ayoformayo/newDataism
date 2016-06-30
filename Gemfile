@@ -13,6 +13,11 @@ gem 'active_model_serializers'
 gem 'rack-cors'
 gem 'sass'
 
+group :development, :test do
+  gem 'rspec-rails'
+  gem 'pry'
+end
+
 
 
 # To use ActiveModel has_secure_password

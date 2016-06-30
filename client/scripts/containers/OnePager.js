@@ -16,6 +16,14 @@ class OnePager extends React.Component {
     return [
       [
         {
+          displayName: 'Marvel Social Graph',
+          displayText: 'Marvel Social Graph',
+          name: 'marvelSocialGraph',
+          anchor: '#marvel_social_graph',
+          endPoint: 'marvel_social_graph',
+          component: require('../ui/MarvelSocialGraph')
+        },
+        {
           displayName: 'Where to Get a Drink in NYC',
           displayText: "Check out a map of all of the Big Apple's drinking establishments",
           name: 'liquorLicenses',
