@@ -13,7 +13,10 @@ class MarvelDataService
 
   def process!
     graph = calculate_graph!
-    File.open('lib/data/marvel_graph.json', 'w'){ |f| f.write JSON.pretty_generate graph}
+    p @node_arr.first
+    p @node_arr
+    File.open('app/views/pop_culture/test_marvel_graph.json', 'w'){ |f| f.write JSON.pretty_generate graph}
+    # File.open('lib/data/marvel_graph.json', 'w'){ |f| f.write JSON.pretty_generate graph}
   end
 
   def self.fetch_series
@@ -55,18 +58,22 @@ class MarvelDataService
     @series_with_characters ||= series.select{ |ser| ser['characters']['items'].length > 0 }
   end
 
+  def character_relationships
+    @character_relationships ||= series_with_characters.map{ |ser| ser['characters']['items']}.take(200)
+  end
+
   def character_nodes
-    @character_nodes ||= series_with_characters.map{ |ser| ser['characters']['items'] }
+    @character_nodes ||= character_relationships.flatten.uniq
   end
 
   def calculate_graph!
-    nodes = character_nodes.flatten.uniq
-    links = recursive_method(character_nodes)
+    nodes = character_nodes
+    links = recursive_method(character_relationships.dup)
     { nodes: nodes, links: links }
   end
 
   def brute_force
-    cloned = character_nodes.dup
+    cloned = character_relationships.dup
     node_arr = []
     while cloned.length > 0
       char_arr = cloned.slice!(0)
@@ -99,13 +106,14 @@ class MarvelDataService
   def analyze_char_array(array)
     return if array.length <= 1
     character = array.slice!(0)
-    p character
     array.each do |link_char|
       node = @node_arr.select{ |h| h.values.include?(link_char) && h.values.include?(character)}.first
       if node
-        node[:value] += 1
+        node[:weight] += 1
       elsif [link_char, character].all? {|x| x.present?} 
-        @node_arr << {source: character, target: link_char, value: 1}
+        char_i = character_nodes.find_index{|node| node['name'] == character['name']}
+        target_i = character_nodes.find_index{|node| node['name'] == link_char['name']}
+        @node_arr << {source: char_i, target: target_i, weight: 1}
       end
     end
     analyze_char_array(array)

@@ -4,6 +4,6 @@ class PopCultureController < ApplicationController
   # end
 
   def marvel_social_network
-    render :marvel_graph
+    render :test_marvel_graph
   end
 end
